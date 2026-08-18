@@ -1,12 +1,48 @@
 {
   "name": "@joinmarka/sdk",
-  "version": "0.0.1",
-  "description": "Placeholder — the official Marka SDK. Coming soon.",
+  "version": "0.1.0",
+  "description": "The official TypeScript client for the Marka API, plus an MCP server built on top of it.",
   "license": "MIT",
   "homepage": "https://joinmarka.com",
-  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DevinoSolutions/marka-node.git"
+  },
+  "keywords": [
+    "marka",
+    "marketplace",
+    "listings",
+    "api-client",
+    "mcp",
+    "sdk"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp.d.ts",
+      "default": "./dist/mcp.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "marka-mcp-stdio": "./dist/bin/mcp-stdio.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@mastra/core": "1.40.0",
+    "@mastra/mcp": "^1.9.1",
+    "zod": "4.3.6"
   }
 }
