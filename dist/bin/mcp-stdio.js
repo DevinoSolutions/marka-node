@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { createMarkaMcpServer } from '../chunk-ODQTTHGL.js';
-import '../chunk-JLHJWPED.js';
+import { createMarkaMcpServer } from '../chunk-AWLVJGQB.js';
+import '../chunk-HMUYEYSO.js';
 
 // src/bin/mcp-stdio.ts
 function readFlag(argv2, name) {

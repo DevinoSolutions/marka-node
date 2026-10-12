@@ -37,6 +37,19 @@ interface MarkaHttpMcpConfig {
         };
     };
 }
+/**
+ * A `mcpServers` block for a client that speaks streamable HTTP AND OAuth — no credential in the
+ * file at all. The client discovers the authorization server from the gateway's 401 challenge,
+ * registers itself, opens a browser, and stores the token it gets back.
+ */
+interface MarkaOAuthMcpConfig {
+    readonly mcpServers: {
+        readonly marka: {
+            readonly type: "http";
+            readonly url: string;
+        };
+    };
+}
 /** A `mcpServers` block for claude_desktop_config.json, which spawns a stdio subprocess. */
 interface MarkaStdioMcpConfig {
     readonly mcpServers: {
@@ -62,6 +75,21 @@ interface MarkaMcpServerConfig {
  */
 declare function getMcpServerConfig(options: MarkaMcpConfigOptions): MarkaMcpServerConfig;
 /**
+ * The same hosted gateway, with nothing to paste.
+ *
+ * This is the configuration to reach for first. `getMcpServerConfig` puts an API key in a header,
+ * which means a long-lived secret sitting in a config file; this one carries no credential, and the
+ * token the client ends up holding is short-lived, refreshable, and revocable by its owner from
+ * Settings → Connected apps. Keys remain the right answer for a script or a CI job, where there is
+ * no browser to open.
+ *
+ * Deliberately additive rather than a change to `getMcpServerConfig`: 0.1.0 is published, and
+ * consumers depend on its shape.
+ */
+declare function getMcpOAuthServerConfig(options?: {
+    readonly baseUrl?: string | undefined;
+}): MarkaOAuthMcpConfig;
+/**
  * An MCP server exposing Marka's public API as tools, backed entirely by {@link MarkaClient}.
  *
  * Unlike the hosted gateway this runs in the CALLER's process against their own key, so the
@@ -71,4 +99,4 @@ declare function getMcpServerConfig(options: MarkaMcpConfigOptions): MarkaMcpSer
  */
 declare function createMarkaMcpServer(options: MarkaMcpOptions): MCPServer;
 
-export { MARKA_MCP_STDIO_BIN, type MarkaHttpMcpConfig, type MarkaMcpConfigOptions, type MarkaMcpOptions, type MarkaMcpServerConfig, type MarkaStdioMcpConfig, createMarkaMcpServer, getMcpServerConfig };
+export { MARKA_MCP_STDIO_BIN, type MarkaHttpMcpConfig, type MarkaMcpConfigOptions, type MarkaMcpOptions, type MarkaMcpServerConfig, type MarkaOAuthMcpConfig, type MarkaStdioMcpConfig, createMarkaMcpServer, getMcpOAuthServerConfig, getMcpServerConfig };

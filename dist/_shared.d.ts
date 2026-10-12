@@ -36,7 +36,7 @@ type V1MeResponse = z.infer<typeof V1MeResponseSchema>;
 /**
  * Body for `POST /v1/listings`. Only the fields a draft genuinely needs are required; every
  * other field carries a server-side default (see buildCreateListingDraftInput in
- * apps/web/app/api/listings/route.ts) and is omitted rather than given a zod `.default()`, so
+ * apps/web/lib/listing-draft-input.ts) and is omitted rather than given a zod `.default()`, so
  * the request and response views of this schema are identical.
  *
  * `.strict()`: an unknown key is a 400, not silently dropped. A caller who misspells a field, or
@@ -48,7 +48,7 @@ declare const V1CreateListingRequestSchema: z.ZodObject<{
     description: z.ZodString;
     price: z.ZodNumber;
     currency: z.ZodOptional<z.ZodString>;
-    categoryId: z.ZodOptional<z.ZodString>;
+    categoryPath: z.ZodOptional<z.ZodString>;
     condition: z.ZodOptional<z.ZodEnum<{
         new: "new";
         refurbished: "refurbished";
@@ -62,7 +62,7 @@ declare const V1CreateListingRequestSchema: z.ZodObject<{
         multi_qty: "multi_qty";
     }>>;
     quantityTotal: z.ZodOptional<z.ZodInt>;
-    attributesJson: z.ZodOptional<z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>;
+    attributes: z.ZodOptional<z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>;
     location: z.ZodOptional<z.ZodObject<{
         latitude: z.ZodOptional<z.ZodNumber>;
         longitude: z.ZodOptional<z.ZodNumber>;
@@ -73,6 +73,7 @@ declare const V1CreateListingRequestSchema: z.ZodObject<{
         addressLine1: z.ZodOptional<z.ZodString>;
         addressLine2: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>>;
+    madeInCountry: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     pickupEnabled: z.ZodOptional<z.ZodBoolean>;
     shippingEnabled: z.ZodOptional<z.ZodBoolean>;
     shippingProfileId: z.ZodOptional<z.ZodNullable<z.ZodString>>;
@@ -109,6 +110,7 @@ declare const V1UpdateListingRequestSchema: z.ZodObject<{
     description: z.ZodOptional<z.ZodString>;
     price: z.ZodOptional<z.ZodNumber>;
     imageUrls: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    madeInCountry: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     pickupEnabled: z.ZodOptional<z.ZodBoolean>;
     shippingEnabled: z.ZodOptional<z.ZodBoolean>;
     directEnabled: z.ZodOptional<z.ZodBoolean>;
@@ -147,7 +149,7 @@ declare const V1ListListingsResponseSchema: z.ZodObject<{
         }>;
         quantityTotal: z.ZodInt;
         quantityReserved: z.ZodInt;
-        categoryId: z.ZodString;
+        categoryPath: z.ZodString;
         condition: z.ZodEnum<{
             new: "new";
             refurbished: "refurbished";
@@ -158,7 +160,7 @@ declare const V1ListListingsResponseSchema: z.ZodObject<{
         }>;
         title: z.ZodString;
         description: z.ZodString;
-        attributesJson: z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>;
+        attributes: z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>;
         imageUrls: z.ZodArray<z.ZodString>;
         brand: z.ZodNullable<z.ZodString>;
         gtin: z.ZodNullable<z.ZodString>;
@@ -168,6 +170,7 @@ declare const V1ListListingsResponseSchema: z.ZodObject<{
             widthMm: z.ZodInt;
             heightMm: z.ZodInt;
         }, z.core.$strip>>;
+        madeInCountry: z.ZodNullable<z.ZodString>;
         acceptsOffers: z.ZodBoolean;
         autoAcceptOfferAmount: z.ZodNullable<z.ZodNumber>;
         price: z.ZodNumber;
@@ -226,7 +229,7 @@ declare const V1ListingResponseSchema: z.ZodObject<{
         }>;
         quantityTotal: z.ZodInt;
         quantityReserved: z.ZodInt;
-        categoryId: z.ZodString;
+        categoryPath: z.ZodString;
         condition: z.ZodEnum<{
             new: "new";
             refurbished: "refurbished";
@@ -237,7 +240,7 @@ declare const V1ListingResponseSchema: z.ZodObject<{
         }>;
         title: z.ZodString;
         description: z.ZodString;
-        attributesJson: z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>;
+        attributes: z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>;
         imageUrls: z.ZodArray<z.ZodString>;
         brand: z.ZodNullable<z.ZodString>;
         gtin: z.ZodNullable<z.ZodString>;
@@ -247,6 +250,7 @@ declare const V1ListingResponseSchema: z.ZodObject<{
             widthMm: z.ZodInt;
             heightMm: z.ZodInt;
         }, z.core.$strip>>;
+        madeInCountry: z.ZodNullable<z.ZodString>;
         acceptsOffers: z.ZodBoolean;
         autoAcceptOfferAmount: z.ZodNullable<z.ZodNumber>;
         price: z.ZodNumber;
@@ -325,7 +329,7 @@ declare const V1SearchResponseSchema: z.ZodObject<{
         }, z.core.$strip>;
         createdAt: z.ZodISODateTime;
         sellerAccountId: z.ZodString;
-        categoryId: z.ZodString;
+        categoryPath: z.ZodString;
         condition: z.ZodEnum<{
             new: "new";
             refurbished: "refurbished";
@@ -349,7 +353,7 @@ type V1ListCategoriesQuery = z.infer<typeof V1ListCategoriesQuerySchema>;
 /** Ordered by `count`, descending. */
 declare const V1ListCategoriesResponseSchema: z.ZodObject<{
     categories: z.ZodArray<z.ZodObject<{
-        categoryId: z.ZodString;
+        categoryPath: z.ZodString;
         label: z.ZodString;
         count: z.ZodInt;
     }, z.core.$strip>>;
@@ -374,13 +378,10 @@ declare const V1ListOrdersQuerySchema: z.ZodObject<{
         abandoned: "abandoned";
         cancelled: "cancelled";
         refunded: "refunded";
-        seller_cancelled: "seller_cancelled";
         buyer_no_show: "buyer_no_show";
         seller_no_show: "seller_no_show";
         rejected_at_pickup: "rejected_at_pickup";
-        delivery_issue: "delivery_issue";
         dispute_open: "dispute_open";
-        resolved: "resolved";
     }>>;
 }, z.core.$strip>;
 type V1ListOrdersQuery = z.infer<typeof V1ListOrdersQuerySchema>;
@@ -425,15 +426,12 @@ declare const V1ListOrdersResponseSchema: z.ZodObject<{
             abandoned: "abandoned";
             cancelled: "cancelled";
             refunded: "refunded";
-            seller_cancelled: "seller_cancelled";
             buyer_no_show: "buyer_no_show";
             seller_no_show: "seller_no_show";
             rejected_at_pickup: "rejected_at_pickup";
-            delivery_issue: "delivery_issue";
             dispute_open: "dispute_open";
-            resolved: "resolved";
         }>;
-        listingSnapshotJson: z.ZodObject<{
+        listingSnapshot: z.ZodObject<{
             id: z.ZodString;
             sellerAccountId: z.ZodString;
             authority: z.ZodEnum<{
@@ -456,7 +454,7 @@ declare const V1ListOrdersResponseSchema: z.ZodObject<{
             }>;
             quantityTotal: z.ZodInt;
             quantityReserved: z.ZodInt;
-            categoryId: z.ZodString;
+            categoryPath: z.ZodString;
             condition: z.ZodEnum<{
                 new: "new";
                 refurbished: "refurbished";
@@ -467,7 +465,7 @@ declare const V1ListOrdersResponseSchema: z.ZodObject<{
             }>;
             title: z.ZodString;
             description: z.ZodString;
-            attributesJson: z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>;
+            attributes: z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>;
             imageUrls: z.ZodArray<z.ZodString>;
             brand: z.ZodNullable<z.ZodString>;
             gtin: z.ZodNullable<z.ZodString>;
@@ -477,6 +475,7 @@ declare const V1ListOrdersResponseSchema: z.ZodObject<{
                 widthMm: z.ZodInt;
                 heightMm: z.ZodInt;
             }, z.core.$strip>>;
+            madeInCountry: z.ZodNullable<z.ZodString>;
             acceptsOffers: z.ZodBoolean;
             autoAcceptOfferAmount: z.ZodNullable<z.ZodNumber>;
             price: z.ZodNumber;
@@ -509,7 +508,7 @@ declare const V1ListOrdersResponseSchema: z.ZodObject<{
             createdAt: z.ZodISODateTime;
             updatedAt: z.ZodISODateTime;
         }, z.core.$strip>;
-        priceSnapshotJson: z.ZodObject<{
+        priceSnapshot: z.ZodObject<{
             itemSubtotal: z.ZodInt;
             shippingAmount: z.ZodInt;
             taxAmount: z.ZodInt;
@@ -517,7 +516,19 @@ declare const V1ListOrdersResponseSchema: z.ZodObject<{
             currency: z.ZodString;
         }, z.core.$strip>;
         stripeCheckoutSessionId: z.ZodNullable<z.ZodString>;
-        checkoutShippingDetailsJson: z.ZodNullable<z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>;
+        checkoutShippingDetails: z.ZodNullable<z.ZodObject<{
+            name: z.ZodNullable<z.ZodString>;
+            email: z.ZodNullable<z.ZodString>;
+            phone: z.ZodNullable<z.ZodString>;
+            address: z.ZodObject<{
+                line1: z.ZodNullable<z.ZodString>;
+                line2: z.ZodNullable<z.ZodString>;
+                city: z.ZodNullable<z.ZodString>;
+                state: z.ZodNullable<z.ZodString>;
+                postal_code: z.ZodNullable<z.ZodString>;
+                country: z.ZodNullable<z.ZodString>;
+            }, z.core.$strip>;
+        }, z.core.$strip>>;
         paymentId: z.ZodNullable<z.ZodString>;
         pickupSessionId: z.ZodNullable<z.ZodString>;
         shipmentId: z.ZodNullable<z.ZodString>;
@@ -529,9 +540,9 @@ declare const V1ListOrdersResponseSchema: z.ZodObject<{
             resolution_only: "resolution_only";
         }>;
         disputeState: z.ZodEnum<{
-            resolved: "resolved";
             none: "none";
             open: "open";
+            resolved: "resolved";
             chargeback_open: "chargeback_open";
             chargeback_resolved: "chargeback_resolved";
         }>;
@@ -577,15 +588,12 @@ declare const V1OrderResponseSchema: z.ZodObject<{
             abandoned: "abandoned";
             cancelled: "cancelled";
             refunded: "refunded";
-            seller_cancelled: "seller_cancelled";
             buyer_no_show: "buyer_no_show";
             seller_no_show: "seller_no_show";
             rejected_at_pickup: "rejected_at_pickup";
-            delivery_issue: "delivery_issue";
             dispute_open: "dispute_open";
-            resolved: "resolved";
         }>;
-        listingSnapshotJson: z.ZodObject<{
+        listingSnapshot: z.ZodObject<{
             id: z.ZodString;
             sellerAccountId: z.ZodString;
             authority: z.ZodEnum<{
@@ -608,7 +616,7 @@ declare const V1OrderResponseSchema: z.ZodObject<{
             }>;
             quantityTotal: z.ZodInt;
             quantityReserved: z.ZodInt;
-            categoryId: z.ZodString;
+            categoryPath: z.ZodString;
             condition: z.ZodEnum<{
                 new: "new";
                 refurbished: "refurbished";
@@ -619,7 +627,7 @@ declare const V1OrderResponseSchema: z.ZodObject<{
             }>;
             title: z.ZodString;
             description: z.ZodString;
-            attributesJson: z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>;
+            attributes: z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>;
             imageUrls: z.ZodArray<z.ZodString>;
             brand: z.ZodNullable<z.ZodString>;
             gtin: z.ZodNullable<z.ZodString>;
@@ -629,6 +637,7 @@ declare const V1OrderResponseSchema: z.ZodObject<{
                 widthMm: z.ZodInt;
                 heightMm: z.ZodInt;
             }, z.core.$strip>>;
+            madeInCountry: z.ZodNullable<z.ZodString>;
             acceptsOffers: z.ZodBoolean;
             autoAcceptOfferAmount: z.ZodNullable<z.ZodNumber>;
             price: z.ZodNumber;
@@ -661,7 +670,7 @@ declare const V1OrderResponseSchema: z.ZodObject<{
             createdAt: z.ZodISODateTime;
             updatedAt: z.ZodISODateTime;
         }, z.core.$strip>;
-        priceSnapshotJson: z.ZodObject<{
+        priceSnapshot: z.ZodObject<{
             itemSubtotal: z.ZodInt;
             shippingAmount: z.ZodInt;
             taxAmount: z.ZodInt;
@@ -669,7 +678,19 @@ declare const V1OrderResponseSchema: z.ZodObject<{
             currency: z.ZodString;
         }, z.core.$strip>;
         stripeCheckoutSessionId: z.ZodNullable<z.ZodString>;
-        checkoutShippingDetailsJson: z.ZodNullable<z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>;
+        checkoutShippingDetails: z.ZodNullable<z.ZodObject<{
+            name: z.ZodNullable<z.ZodString>;
+            email: z.ZodNullable<z.ZodString>;
+            phone: z.ZodNullable<z.ZodString>;
+            address: z.ZodObject<{
+                line1: z.ZodNullable<z.ZodString>;
+                line2: z.ZodNullable<z.ZodString>;
+                city: z.ZodNullable<z.ZodString>;
+                state: z.ZodNullable<z.ZodString>;
+                postal_code: z.ZodNullable<z.ZodString>;
+                country: z.ZodNullable<z.ZodString>;
+            }, z.core.$strip>;
+        }, z.core.$strip>>;
         paymentId: z.ZodNullable<z.ZodString>;
         pickupSessionId: z.ZodNullable<z.ZodString>;
         shipmentId: z.ZodNullable<z.ZodString>;
@@ -681,9 +702,9 @@ declare const V1OrderResponseSchema: z.ZodObject<{
             resolution_only: "resolution_only";
         }>;
         disputeState: z.ZodEnum<{
-            resolved: "resolved";
             none: "none";
             open: "open";
+            resolved: "resolved";
             chargeback_open: "chargeback_open";
             chargeback_resolved: "chargeback_resolved";
         }>;

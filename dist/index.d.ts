@@ -1,4 +1,6 @@
 import { V1MeResponse, V1ListListingsQuery, V1ListListingsResponse, V1CreateListingRequest, V1ListingResponse, V1UpdateListingRequest, V1SearchQuery, V1SearchResponse, V1ListCategoriesQuery, V1ListCategoriesResponse, V1ListOrdersQuery, V1ListOrdersResponse, V1OrderResponse } from './_shared.js';
+export { MarkaHttpMcpConfig, MarkaMcpConfigOptions, MarkaMcpOptions, MarkaMcpServerConfig, MarkaOAuthMcpConfig, MarkaStdioMcpConfig } from './mcp.js';
+import '@mastra/mcp';
 
 interface MarkaClientOptions {
     /** An API key created in Marka account settings (`mk_…`). Sent on every request. */

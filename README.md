@@ -14,7 +14,8 @@ the SDK cannot describe an endpoint the API does not have.
 npm install @joinmarka/sdk
 ```
 
-Requires Node.js 20.19 or newer. ESM only.
+`MarkaClient` runs on Node 20.19+. `@joinmarka/sdk/mcp` and the `marka-mcp-stdio` command need
+Node 22.13+ (a requirement of @mastra/core). ESM only.
 
 ## Quickstart
 
@@ -129,9 +130,23 @@ const server = createMarkaMcpServer({ apiKey: "mk_…" });
 await server.startStdio();
 ```
 
-`getMcpServerConfig({ apiKey })` returns ready-to-paste `mcpServers` blocks for both transports —
-the stdio one above, and an HTTP one pointing at Marka's hosted MCP gateway, which is a **different
-server with a different tool set** backed by Marka's own database.
+### The hosted gateway needs no key at all
+
+Marka's hosted MCP gateway is a **different server with a different tool set**, backed by Marka's
+own database, and it authenticates over OAuth 2.1: the client discovers the authorization server
+from the gateway's `401`, registers itself, and opens a browser. Nothing is pasted anywhere, and
+the grant is revocable from Marka under **Settings → Connected apps**.
+
+```ts
+import { getMcpOAuthServerConfig } from "@joinmarka/sdk/mcp";
+
+getMcpOAuthServerConfig();
+// → { mcpServers: { marka: { type: "http", url: "https://joinmarka.com/api/mcp" } } }
+```
+
+`getMcpServerConfig({ apiKey })` is the API-key form, returning ready-to-paste `mcpServers` blocks
+for both transports — the stdio one above, and an HTTP one carrying the key in a header. Use it
+where there is no browser to open.
 
 ## Docs
 
