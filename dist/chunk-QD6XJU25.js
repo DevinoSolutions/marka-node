@@ -156,5 +156,5 @@ function toApiError(response, text) {
 }
 
 export { MarkaApiError, MarkaClient, MarkaNetworkError, OPENAPI_API_KEY_HEADER, OPENAPI_SERVER_URL, V1_PATH_PREFIX, trimTrailingSlashes };
-//# sourceMappingURL=chunk-HMUYEYSO.js.map
-//# sourceMappingURL=chunk-HMUYEYSO.js.map
+//# sourceMappingURL=chunk-QD6XJU25.js.map
+//# sourceMappingURL=chunk-QD6XJU25.js.map

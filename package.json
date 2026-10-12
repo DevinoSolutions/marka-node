@@ -1,6 +1,6 @@
 {
   "name": "@joinmarka/sdk",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "The official TypeScript client for the Marka API, plus an MCP server built on top of it.",
   "license": "MIT",
   "homepage": "https://joinmarka.com",

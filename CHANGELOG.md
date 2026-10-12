@@ -5,6 +5,25 @@ All notable changes to `@joinmarka/sdk` are documented here. The format follows
 [Semantic Versioning](https://semver.org/). While the version is below 1.0, a minor release may
 contain breaking changes; they are always listed under "Breaking".
 
+## 0.2.1 — 2026-10-12
+
+No API changes: the same methods, types, tools and request shapes as 0.2.0.
+
+### Fixed
+
+- The MCP server now reports the package's own version (`0.2.1`) in `serverInfo` during the MCP
+  handshake. 0.2.0 reported `1.0.0` regardless of the version installed.
+
+### Documentation
+
+Corrections to the 0.2.0 notes below. The 0.2.0 package shipped with the older wording.
+
+- Only `createListing` takes `categoryPath` and `attributes`. `updateListing` never took
+  them, so there is nothing to rename there.
+- `madeInCountry` is accepted by the hosted `/api/mcp` listing tools. The SDK's local MCP tools
+  (`create_listing` and `update_listing`, from `@joinmarka/sdk/mcp` and `marka-mcp-stdio`) do not
+  accept it yet.
+
 ## 0.2.0 — 2026-10-12
 
 0.2.0 brings the SDK back in step with the current Marka API. Several request and response fields
@@ -19,13 +38,13 @@ true of 0.1.0; the package's `engines` field (`>=20.19.0`) describes the client 
 
 ### Breaking
 
-- **Listing requests use `categoryPath`, not `categoryId`.** `createListing` and `updateListing`
-  (and the `create_listing` MCP tool) now take `categoryPath`, a slash-separated lowercase path such
+- **Listing requests use `categoryPath`, not `categoryId`.** `createListing` (and the
+  `create_listing` MCP tool) now takes `categoryPath`, a slash-separated lowercase path such
   as `"electronics/cameras"`. It is never an external marketplace's numeric category id. The server
   rejects the old `categoryId` key. Migration: rename the key and pass a path instead of an id.
   Omitting it still defaults to `"general"`.
-- **Listing requests use `attributes`, not `attributesJson`.** Same two methods, same migration:
-  rename the key. The value is unchanged.
+- **Listing requests use `attributes`, not `attributesJson`.** Same method, same migration: rename
+  the key. The value is unchanged.
 - **Listing and order responses were renamed to match.** Replace `categoryId` with `categoryPath`
   and `attributesJson` with `attributes` on listings. On orders, replace `listingSnapshotJson` with
   `listingSnapshot`, `priceSnapshotJson` with `priceSnapshot`, and `checkoutShippingDetailsJson`
@@ -58,8 +77,9 @@ true of 0.1.0; the package's `engines` field (`>=20.19.0`) describes the client 
   `MarkaMcpServerConfig`, `MarkaMcpConfigOptions`, `MarkaMcpOptions`) are exported from the package
   root as types only, so importing them does not pull the MCP server into a browser bundle.
 - Listings carry a `madeInCountry` field (an ISO 3166-1 alpha-2 country code such as `"CA"`, or
-  `null`), which you can also set on `createListing` and `updateListing` and through the listing MCP
-  tools; `null` clears it on an update. It is the item's country of manufacture: Marka sends it with
+  `null`), which you can also set on `createListing` and `updateListing`; `null` clears it on an update. The
+  hosted MCP server's listing tools (`/api/mcp`) accept it too; the SDK's local `create_listing` and
+  `update_listing` tools do not yet. It is the item's country of manufacture: Marka sends it with
   international shipping rate requests, and it will be used on customs forms when shipping labels
   go live.
 - The README explains the keyless OAuth setup.

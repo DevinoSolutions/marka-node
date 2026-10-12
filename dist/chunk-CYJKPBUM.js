@@ -1,4 +1,4 @@
-import { V1_PATH_PREFIX, OPENAPI_API_KEY_HEADER, MarkaClient, trimTrailingSlashes, OPENAPI_SERVER_URL, MarkaApiError } from './chunk-HMUYEYSO.js';
+import { V1_PATH_PREFIX, OPENAPI_API_KEY_HEADER, MarkaClient, trimTrailingSlashes, OPENAPI_SERVER_URL, MarkaApiError } from './chunk-QD6XJU25.js';
 import { MCPServer } from '@mastra/mcp';
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
@@ -549,6 +549,9 @@ new Map(
   Object.entries(V1_COMPONENT_SCHEMAS).map(([name, schema]) => [schema, name])
 );
 
+// package.json
+var version = "0.2.1";
+
 // src/mcp.ts
 var MCP_HTTP_PATH = `${V1_PATH_PREFIX}/mcp`;
 var MARKA_MCP_STDIO_BIN = "marka-mcp-stdio";
@@ -684,12 +687,12 @@ function createMarkaMcpServer(options) {
   return new MCPServer({
     id: "marka",
     name: "Marka",
-    version: "1.0.0",
+    version,
     description: "Search Marka listings and draft new ones through the public Marka API.",
     tools: buildTools(client)
   });
 }
 
 export { MARKA_MCP_STDIO_BIN, createMarkaMcpServer, getMcpOAuthServerConfig, getMcpServerConfig };
-//# sourceMappingURL=chunk-AWLVJGQB.js.map
-//# sourceMappingURL=chunk-AWLVJGQB.js.map
+//# sourceMappingURL=chunk-CYJKPBUM.js.map
+//# sourceMappingURL=chunk-CYJKPBUM.js.map
