@@ -1,0 +1,4 @@
+# dist/ is the published SDK, not a vendored copy of someone else's code. Linguist treats any dist/
+# directory as vendored, so without this GitHub detects no JavaScript here and CodeQL default setup
+# will not scan it. Kept across releases by scripts/release-sdk.mjs in the monorepo.
+dist/** linguist-vendored=false linguist-generated=false
